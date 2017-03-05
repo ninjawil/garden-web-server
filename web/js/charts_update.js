@@ -204,6 +204,7 @@ function drawHeatMap(year, sensor_name, value_array) {
 	var draw_row = '<div class="row"><div class="col-md-1"><div class="vertical-text"><h4>%year%</h4></div></div><div id="charts-col2-%year%" class="col-md-11"></div></div>'	
 
     $(draw_row.replace(/%year%/g, year)).appendTo('#graph-container');
+	$('#graph-container').css('overflowY', 'auto');
 
     var parser = function(data) {
 		var stats = {};
@@ -409,6 +410,7 @@ function drawCharts(chart_names, drawDayNight, sensors) {
 
 		// Create chart
     	$('<div class="chart" style="height:180px">').appendTo('#graph-container').highcharts(highchartOptions);
+		$('#graph-container').css('overflowY', 'auto');
 	}
 
 }
