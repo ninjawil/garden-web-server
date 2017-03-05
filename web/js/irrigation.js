@@ -18,6 +18,11 @@ function displayIrrigation() {
 
 	// Clear chart area
 	$('#graph-container').empty();
+    $('#graph-container').css('overflowY', 'hidden');
+
+	$('#sidebar').show();
+	$('#main').removeClass('col-sm-12').addClass('col-sm-10');
+
 
     // Set up chart screen sections
     $('<div id="chart-section"></div>').appendTo('#graph-container');

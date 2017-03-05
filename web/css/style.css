@@ -1,7 +1,19 @@
+body {
+	margin: 0.5vh; 
+	height: 90vh; 
+	overflow: hidden;
+}
 
 .header {
 	margin-top: 5px;
 	padding: 5px;
+}
+
+#graph-container {
+	height: 75vh; 
+	border: 1px;
+	overflow-x: hidden;
+	padding-left: 1vh;
 }
 
 .alert-mod {
@@ -15,32 +27,36 @@
 	font-family: inherit;
 }
 
-@media (min-width: 480px) {
+@media (min-width: 1030px) {
 	.sidebar {
 		font-family: Verdana, Geneva, sans-serif;
 		color: #616161;
 		max-width:200px;
+		height: 85vh;
 	}
 }
 
-@media (max-width: 480px) {
+@media (max-width: 1030px) {
 	.sidebar {
 		font-family: Verdana, Geneva, sans-serif;
 		color: #616161;
+		height: 85vh;
 	}
 }
 
 .reading-group {
     background-color: #eee;
     border-radius: .8em;
-    padding: 5px;
+    padding: 1vh;
     margin: 0px;
-    margin-bottom: 10px;
+    margin-bottom: 1vh;
+	max-height: 10vh;
 }
 
 .reading-value {
 	font-weight: bold;
     font-size: xx-large;
+	margin: -0.5vh;
 }
 
 .reading-unit {

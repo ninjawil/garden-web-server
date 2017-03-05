@@ -180,6 +180,9 @@ function displayHeatMap(sensor_id) {
 	$('li').removeClass('active');
 	$('#calendar').parent().addClass('active');
 
+	$('#sidebar').show();
+	$('#main').removeClass('col-sm-12').addClass('col-sm-10');
+
 	// Clear chart area
 	$('#graph-container').empty();
 
@@ -201,6 +204,7 @@ function drawHeatMap(year, sensor_name, value_array) {
 	var draw_row = '<div class="row"><div class="col-md-1"><div class="vertical-text"><h4>%year%</h4></div></div><div id="charts-col2-%year%" class="col-md-11"></div></div>'	
 
     $(draw_row.replace(/%year%/g, year)).appendTo('#graph-container');
+	$('#graph-container').css('overflowY', 'auto');
 
     var parser = function(data) {
 		var stats = {};
@@ -261,6 +265,9 @@ function drawCharts(chart_names, drawDayNight, sensors) {
 
 	// Clear chart area
 	$('#graph-container').empty();
+
+	$('#sidebar').show();
+	$('#main').addClass('col-sm-10').removeClass('col-sm-12');
 
     // Override the reset function, we don't need to hide the tooltips and crosshairs.
     Highcharts.Pointer.prototype.reset = function () {
@@ -402,7 +409,8 @@ function drawCharts(chart_names, drawDayNight, sensors) {
 		//console.log(highchartOptions);
 
 		// Create chart
-    	$('<div class="chart" style="height:180px">').appendTo('#graph-container').highcharts(highchartOptions);
+    	$('<div class="chart" style="height:180px; width: 79vw;">').appendTo('#graph-container').highcharts(highchartOptions);
+		$('#graph-container').css('overflowY', 'auto');
 	}
 
 }
