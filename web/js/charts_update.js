@@ -409,7 +409,7 @@ function drawCharts(chart_names, drawDayNight, sensors) {
 		//console.log(highchartOptions);
 
 		// Create chart
-    	$('<div class="chart" style="height:180px">').appendTo('#graph-container').highcharts(highchartOptions);
+    	$('<div class="chart" style="height:180px; width: 79vw;">').appendTo('#graph-container').highcharts(highchartOptions);
 		$('#graph-container').css('overflowY', 'auto');
 	}
 
