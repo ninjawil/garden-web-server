@@ -15,15 +15,15 @@
 	font-family: inherit;
 }
 
-@media (min-width: 480px) {
+@media (min-width: 1030px) {
 	.sidebar {
 		font-family: Verdana, Geneva, sans-serif;
 		color: #616161;
-		max-width:200px;
+		max-width:100px;
 	}
 }
 
-@media (max-width: 480px) {
+@media (max-width: 1030px) {
 	.sidebar {
 		font-family: Verdana, Geneva, sans-serif;
 		color: #616161;
