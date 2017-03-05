@@ -1,3 +1,0 @@
-[submodule "scripts/evernote"]
-	path = scripts/evernote
-	url = git://github.com/evernote/evernote-sdk-python/
