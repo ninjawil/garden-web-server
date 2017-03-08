@@ -1,7 +1,16 @@
-body {
-	margin: 0.5vh; 
-	height: 90vh; 
-	overflow: hidden;
+@media (min-width: 1030px) {
+	body {
+		margin: 0.5vh; 
+		height: 90vh; 
+		overflow: hidden;
+	}
+}
+
+@media (max-width: 1030px) {
+	body {
+		margin: 0.5vh; 
+		height: 90vh; 
+	}
 }
 
 .header {
