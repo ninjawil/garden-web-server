@@ -1,3 +1,14 @@
+body {
+    min-height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    height: 100%;
+}
+
+
 @media (min-width: 1030px) {
 	body {
 		margin: 0.5vh; 
@@ -19,7 +30,7 @@
 }
 
 #graph-container {
-	height: 75vh; 
+	height: 100%; 
 	border: 1px;
 	overflow-x: hidden;
 	padding-left: 1vh;
