@@ -122,3 +122,7 @@ html {
 	text-align: left;
 }
 
+.jqstooltip{
+    box-sizing: content-box;
+}
+
