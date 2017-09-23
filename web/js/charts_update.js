@@ -181,6 +181,7 @@ function displayHeatMap(sensor_id) {
 	$('#calendar').parent().addClass('active');
 
 	$('#sidebar').show();
+	$('#header').show();
 	$('#main').removeClass('col-sm-12').addClass('col-sm-10');
 
 	// Clear chart area
@@ -267,6 +268,7 @@ function drawCharts(chart_names, drawDayNight, sensors) {
 	$('#graph-container').empty();
 
 	$('#sidebar').show();
+	$('#header').show();
 	$('#main').addClass('col-sm-10').removeClass('col-sm-12');
 
     // Override the reset function, we don't need to hide the tooltips and crosshairs.
