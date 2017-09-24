@@ -64,8 +64,24 @@ def main():
         root = tree.getroot()
         xmldict = xml_tools.XmlDictConfig(root)
 
-        print xmldict
-       
+        values = {}
+        for child in root[1]:
+            for grandchild in child:
+                if grandchild.tag == 't':
+                    key = int(grandchild.text) / 1000
+                    values[key] = []
+                elif grandchild.tag == 'v':
+                    values[key].append(grandchild.text)
+
+
+
+        print values[1465344]
+
+
+
+        print root[1][0][0].tag
+        print root[1][0][0].attrib
+
 
     except Exception, e:
         logger.error('ERROR: ({error_v}).'.format(error_v=e), exc_info=True)
