@@ -84,7 +84,6 @@ def main():
 
             # append year's data to file
             for row in root[1].findall('row'):
-                print row[0].text
                 xml_root[1].append(row)
 
 
