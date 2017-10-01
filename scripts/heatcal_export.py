@@ -31,7 +31,7 @@ def main():
    
     script_name = os.path.basename(sys.argv[0])
     folder_loc  = os.path.dirname(os.path.realpath(sys.argv[0]))
-    folder_loc  = folder_loc.replace('scripts', '')
+    folder_loc  = folder_loc.replace('garden-web-server/scripts', 'weather')
 
 
     #---------------------------------------------------------------------------
@@ -129,6 +129,8 @@ def main():
                     ET.SubElement(year, 'entry', time=time).text = value
         
 
+        logger.info('{folder}/data/{xml_file}'.format(folder= folder_loc,
+                                                    xml_file= output_file))
         tree.write('{folder}/data/{xml_file}'.format(folder= folder_loc,
                                                     xml_file= output_file))
 
