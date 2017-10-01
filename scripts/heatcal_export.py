@@ -9,6 +9,7 @@ import sys
 import datetime
 import time
 import collections
+import copy
 from xml.etree import cElementTree as ET
 
 # Third party modules
@@ -71,37 +72,20 @@ def main():
             tree = ET.parse('{folder}/data/{xml_file}'.format(
                                                         folder= folder_loc,
                                                         xml_file= xml_file))
-            logger.info('Sorting data')
-            
             root = tree.getroot()
-            xmldict = xml_tools.XmlDictConfig(root)
 
-            for sensor in root.iter('entry'):
-                if sensor.text not in sensors:
-                    sensors.append(sensor.text)
-                    xml_data[sensor.text] = {}
+            if not xml_data:
+                logger.info('First copy')
+                xml_data = copy.deepcopy(tree)
+                xml_root = xml_data.getroot()
+                continue
 
-                if year_ref not in xml_data[sensor.text].keys():   
-                    xml_data[sensor.text][year_ref] = {}
+            data = root[1]
 
-
-            # Sort data under sensor and then time
-            for child in root[1]:
-                for grandchild in child:
-                    if grandchild.tag == 't':
-                        time = str(int(grandchild.text) / 1000)
-                        i = 0
-                    elif grandchild.tag == 'v':
-                        xml_data[sensors[i]][year_ref][time] = grandchild.text
-                        i += 1
-
-
-        #-------------------------------------------------------------------
-        # Remove min and max data sets
-        #-------------------------------------------------------------------
-        for sensor in xml_data.keys():
-            if '_min' in sensor or '_max' in sensor:
-                del xml_data[sensor]
+            # append year's data to file
+            for row in root[1].findall('row'):
+                print row[0].text
+                xml_root[1].append(row)
 
 
         #-------------------------------------------------------------------
@@ -109,29 +93,9 @@ def main():
         #-------------------------------------------------------------------
 
         output_file = 'wd_all_years.xml'
-        logger.info('Writting data to {f}'.format(f=output_file))
-        # create new xml
-        root = ET.Element('root')
-        tree = ET.ElementTree(root)
-        data = ET.SubElement(root, 'data')
-
-        # populate xml
-        for op_xml in xml_data.keys():
-
-            # Create a subelement for each sensor 
-            sensor = ET.SubElement(data, 'sensor', name= op_xml) 
-
-            for year_ref in years:
-                year = ET.SubElement(sensor, 'year', year= year_ref)
-
-                # Populate time and value in each sensor          
-                for time, value in xml_data[op_xml][year_ref].iteritems():
-                    ET.SubElement(year, 'entry', time=time).text = value
-        
-
-        logger.info('{folder}/data/{xml_file}'.format(folder= folder_loc,
+        logger.info('Writting data to {folder}/data/{xml_file}'.format(folder= folder_loc,
                                                     xml_file= output_file))
-        tree.write('{folder}/data/{xml_file}'.format(folder= folder_loc,
+        xml_data.write('{folder}/data/{xml_file}'.format(folder= folder_loc,
                                                     xml_file= output_file))
 
 
