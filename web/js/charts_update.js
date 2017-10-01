@@ -124,7 +124,7 @@ function xmlGetData(filename, sensors_array, functionCall, args) {
 				var xml = xhttp.responseXML,
 					xml_sensors  = xml.getElementsByTagName("entry"),
 					xmlValue = xml.getElementsByTagName("row");
-
+					
 				for(var i=0, i_len=xml_sensors.length; i<i_len; i++) {
 
 					output_data[xml_sensors[i].childNodes[0].nodeValue] = [];
@@ -191,8 +191,7 @@ function displayHeatMap(sensor_id) {
 	var title = '<div id="title-section"><div class="row"><h4>%name%</h4></div><div id="cal-heatmap"></div></div><div id="charts-section"></div>';
     $(title.replace("%name%", sensor_setup[sensor_id].description)).appendTo('#graph-container');
 
-	xmlGetData(dir + '_data/' + 'wd_all_2016.xml', '', drawHeatMap, ['2016', sensor_id]);
-	xmlGetData(dir + '_data/' + 'wd_all_2017.xml', '', drawHeatMap, ['2017', sensor_id]);
+	xmlGetData(dir + '_data/' + 'wd_all_years.xml', '', drawHeatMap, [sensor_id]);
     
 }
 
@@ -200,13 +199,8 @@ function displayHeatMap(sensor_id) {
 //-------------------------------------------------------------------------------
 // Draw heat map
 //-------------------------------------------------------------------------------
-function drawHeatMap(year, sensor_name, value_array) {
-
-	var draw_row = '<div class="row"><div class="col-md-1"><div class="vertical-text"><h4>%year%</h4></div></div><div id="charts-col2-%year%" class="col-md-11"></div></div>'	
-
-    $(draw_row.replace(/%year%/g, year)).appendTo('#graph-container');
-	$('#graph-container').css('overflowY', 'auto');
-
+function drawHeatMap(sensor_name, value_array) {
+	
     var parser = function(data) {
 		var stats = {};
 		for (var d in data) {
@@ -219,43 +213,50 @@ function drawHeatMap(year, sensor_name, value_array) {
 	for(var i=0, len=value_array[sensor_name].length; i<len; i++){
 		data_array.push(value_array[sensor_name][i][1]);
 	}
-
+	
 	var min_of_array = Math.min.apply(Math, data_array);
 	var max_of_array = Math.max.apply(Math, data_array);
 	var legend_range = [0,0,0,0];
-
+	
 	// legend_range[3] = average(data_array) + standardDeviation(data_array);
 	legend_range[3] = 0.75*max_of_array;
 	legend_range[2] = min_of_array + 0.75*(legend_range[3] - min_of_array);
 	legend_range[1] = min_of_array + 0.50*(legend_range[3] - min_of_array);
 	legend_range[0] = min_of_array + 0.25*(legend_range[3] - min_of_array);
+	
+	var draw_row = '<div class="row"><div class="col-md-1"><div class="vertical-text"><h4>%year%</h4></div></div><div id="charts-col2-%year%" class="col-md-11"></div></div>'	
 
-	var item = "#charts-col2-%year%".replace("%year%", year);
+	for(var year=2016, len=(new Date()).getFullYear(); year<=len; year++)
+	{
+		$(draw_row.replace(/%year%/g, year)).appendTo('#graph-container');
+		$('#graph-container').css('overflowY', 'auto');
 
+		var item = "#charts-col2-%year%".replace("%year%", year);
 
-	var calendar = new CalHeatMap();
-	calendar.init({
-		itemSelector: item,
-		data: value_array[sensor_name],
-		afterLoadData: parser,
-		itemName: [sensor_setup[sensor_name].unit, sensor_setup[sensor_name].unit],
-		start: new Date(year, 0),
-		domain : "month",			// Group data by month
-		subDomain : "day",			// Split each month by days
-		cellsize: 20,
-		cellpadding: 3,
-		cellradius: 5,
-		tooltip: true,
-		legendVerticalPosition: "center",
-		legendHorizontalPosition: "right",
-		legendOrientation: "vertical",
-		legend: legend_range,
-		legendColors: {
-			min: 	sensor_setup[sensor_name].color.replace(/\%,.*\%\)/gi, '%, 85%)'), 
-			max: 	sensor_setup[sensor_name].color,
-			empty: 	sensor_setup[sensor_name].color.replace(/\%,.*\%\)/gi, '%, 95%)') //"#ededed"
-		}
-	});
+		var calendar = new CalHeatMap();
+		calendar.init({
+			itemSelector: item,
+			data: value_array[sensor_name],
+			afterLoadData: parser,
+			itemName: [sensor_setup[sensor_name].unit, sensor_setup[sensor_name].unit],
+			start: new Date(year, 0),
+			domain : "month",			// Group data by month
+			subDomain : "day",			// Split each month by days
+			cellsize: 20,
+			cellpadding: 3,
+			cellradius: 5,
+			tooltip: true,
+			legendVerticalPosition: "center",
+			legendHorizontalPosition: "right",
+			legendOrientation: "vertical",
+			legend: legend_range,
+			legendColors: {
+				min: 	sensor_setup[sensor_name].color.replace(/\%,.*\%\)/gi, '%, 85%)'), 
+				max: 	sensor_setup[sensor_name].color,
+				empty: 	sensor_setup[sensor_name].color.replace(/\%,.*\%\)/gi, '%, 95%)') //"#ededed"
+			}
+		});
+	}
 }
 
 
