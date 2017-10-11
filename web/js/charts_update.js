@@ -201,6 +201,116 @@ function displayHeatMap(sensor_id) {
 //-------------------------------------------------------------------------------
 function drawHeatMap(sensor_name, value_array) {
 	
+	
+	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	// Prepare data
+	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	var daily_array = [];
+		year_array = {},
+		current_month = 0,
+		d = '',
+		days = 0;
+		month = '',
+		year = '',
+		total = 0;
+
+	for(var i=0, len=value_array[sensor_name].length; i<len; i++){
+
+		days++;
+
+		daily_array.push(value_array[sensor_name][i][1]);
+
+		d = new Date(value_array[sensor_name][i][0])
+		month = d.getMonth();
+		year = d.getFullYear();
+
+		console.log(month);
+		
+		if( !(year in year_array)){
+			year_array[year] = new Array(12).fill(0);
+		}
+
+		year_array[year][month] += value_array[sensor_name][i][1];
+
+	}
+
+	console.log(year_array);
+	
+	var min_of_array = Math.min.apply(Math, daily_array);
+	var max_of_array = Math.max.apply(Math, daily_array);
+	var legend_range = [0,0,0,0];
+	
+	// legend_range[3] = average(daily_array) + standardDeviation(daily_array);
+	legend_range[3] = 0.75*max_of_array;
+	legend_range[2] = min_of_array + 0.75*(legend_range[3] - min_of_array);
+	legend_range[1] = min_of_array + 0.50*(legend_range[3] - min_of_array);
+	legend_range[0] = min_of_array + 0.25*(legend_range[3] - min_of_array);
+
+	
+	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	// Draw monthly barcharts
+	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+	highchartOptions = {
+        chart: {
+            type:	'column'
+        },
+        title: {
+            text: 'Monthly'
+        },
+		xAxis: {
+			categories: [
+				'Jan',
+				'Feb',
+				'Mar',
+				'Apr',
+				'May',
+				'Jun',
+				'Jul',
+				'Aug',
+				'Sep',
+				'Oct',
+				'Nov',
+				'Dec'
+			],
+			crosshair: true
+		},
+		yAxis: {
+			min: 0,
+			title: {
+				text: 'Rainfall (mm)'
+			}
+		},
+		tooltip: {
+			headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+			pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+				'<td style="padding:0"><b>{point.y:.1f} mm</b></td></tr>',
+			footerFormat: '</table>',
+			shared: true,
+			useHTML: true
+		},
+		plotOptions: {
+			column: {
+				pointPadding: 0.2,
+				borderWidth: 0
+			}
+		},
+    }
+
+	
+	// Add data values
+	highchartOptions.series = valueSeries;
+	
+	//console.log(highchartOptions);
+	
+	// Create chart
+	$('<div class="chart" style="height:180px; width: 79vw;">').appendTo('#graph-container').highcharts(highchartOptions);
+	$('#graph-container').css('overflowY', 'auto');
+
+	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	// Draw heat maps
+	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	
     var parser = function(data) {
 		var stats = {};
 		for (var d in data) {
@@ -209,20 +319,6 @@ function drawHeatMap(sensor_name, value_array) {
 		return stats;
 	};
 
-	var data_array = [];
-	for(var i=0, len=value_array[sensor_name].length; i<len; i++){
-		data_array.push(value_array[sensor_name][i][1]);
-	}
-	
-	var min_of_array = Math.min.apply(Math, data_array);
-	var max_of_array = Math.max.apply(Math, data_array);
-	var legend_range = [0,0,0,0];
-	
-	// legend_range[3] = average(data_array) + standardDeviation(data_array);
-	legend_range[3] = 0.75*max_of_array;
-	legend_range[2] = min_of_array + 0.75*(legend_range[3] - min_of_array);
-	legend_range[1] = min_of_array + 0.50*(legend_range[3] - min_of_array);
-	legend_range[0] = min_of_array + 0.25*(legend_range[3] - min_of_array);
 	
 	var draw_row = '<div class="row"><div class="col-md-1"><div class="vertical-text"><h4>%year%</h4></div></div><div id="charts-col2-%year%" class="col-md-11"></div></div>'	
 
