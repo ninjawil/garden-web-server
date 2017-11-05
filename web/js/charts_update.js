@@ -215,7 +215,6 @@ function drawHeatMap(sensor_name, value_array) {
 		total = 0;
 
 	for(var i=0, len=value_array[sensor_name].length; i<len; i++){
-
 		days++;
 
 		daily_array.push(value_array[sensor_name][i][1]);
@@ -224,14 +223,34 @@ function drawHeatMap(sensor_name, value_array) {
 		month = d.getMonth();
 		year = d.getFullYear();
 
-		console.log(month);
-		
 		if( !(year in year_array)){
-			year_array[year] = new Array(12).fill(0);
+			year_array[year] = {};
+			year_array[year]['acc'] = new Array(12).fill(0);
+			year_array[year]['avg'] = new Array(12).fill(0);
+			year_array[year]['maxmin'] = new Array(12).fill([0,0]);
 		}
 
-		year_array[year][month] += value_array[sensor_name][i][1];
+		year_array[year]['acc'][month] += value_array[sensor_name][i][1];
 
+		if(value_array[sensor_name][i][1] > year_array[year]['maxmin'][month][1]) {
+			year_array[year]['maxmin'][month][1] = value_array[sensor_name][i][1];
+		}
+
+		if(value_array[sensor_name][i][1] < year_array[year]['maxmin'][month][0]) {
+			year_array[year]['maxmin'][month][0] = value_array[sensor_name][i][1];
+		}
+
+	}
+
+	var days;
+
+	for (var year in year_array) {
+		if (year_array.hasOwnProperty(year)) {
+			for(var month=0, len=12; month<len; month++){
+				days = new Date(year, month, 0).getDate()
+				year_array[year]['avg'][month] = year_array[year]['acc'][month] / days;
+			}
+		}
 	}
 
 	console.log(year_array);
@@ -252,11 +271,11 @@ function drawHeatMap(sensor_name, value_array) {
 	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 	highchartOptions = {
-        chart: {
-            type:	'column'
-        },
+        // chart: {
+        //     type:	'column'
+        // },
         title: {
-            text: 'Monthly'
+            text: ''
         },
 		xAxis: {
 			categories: [
@@ -276,15 +295,12 @@ function drawHeatMap(sensor_name, value_array) {
 			crosshair: true
 		},
 		yAxis: {
-			min: 0,
-			title: {
-				text: 'Rainfall (mm)'
-			}
+			title: sensor_setup[sensor_name].unit
 		},
 		tooltip: {
 			headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
 			pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
-				'<td style="padding:0"><b>{point.y:.1f} mm</b></td></tr>',
+				'<td style="padding:0"><b>{point.y:.2f} '+ sensor_setup[sensor_name].unit +'</b></td></tr>',
 			footerFormat: '</table>',
 			shared: true,
 			useHTML: true
@@ -297,11 +313,21 @@ function drawHeatMap(sensor_name, value_array) {
 		},
     }
 
-	
+	valueSeries = [];
+
+	for (var year in year_array) {
+		if (year_array.hasOwnProperty(year)) {
+			valueSeries.push({
+				data: year_array[year][sensor_setup[sensor_name].summary],
+				type: sensor_setup[sensor_name].summary_type,
+				name: year,
+				fillOpacity: 0.3,
+			});
+		}
+	}
+
 	// Add data values
-	highchartOptions.series = valueSeries;
-	
-	//console.log(highchartOptions);
+	highchartOptions.series = valueSeries;	
 	
 	// Create chart
 	$('<div class="chart" style="height:180px; width: 79vw;">').appendTo('#graph-container').highcharts(highchartOptions);
@@ -667,7 +693,9 @@ var dir = 'weather',
 					lineWidth: 2,
 					fillOpacity: 0.75,
 					readings: [],
-					zIndex: 6
+					zIndex: 6,
+					summary: 'avg',
+					summary_type: 'column'
 				},
 				'inside_temp': {
 					description: 'Inside Temperature',
@@ -686,7 +714,9 @@ var dir = 'weather',
 					lineWidth: 2,
 					fillOpacity: 0.75,
 					readings: [],
-					zIndex: 6
+					zIndex: 6,
+					summary: 'avg',
+					summary_type: 'column'
 				},
 				'inside_hum': {
 					description: 'Inside Humidity',
@@ -705,7 +735,9 @@ var dir = 'weather',
 					lineWidth: 2,
 					fillOpacity: 0.75,
 					readings: [],
-					zIndex: 6
+					zIndex: 6,
+					summary: 'avg',
+					summary_type: 'column'
 				},
 				'precip_rate': {
 					description: 'Precipitation Rate',
@@ -724,7 +756,9 @@ var dir = 'weather',
 					lineWidth: 2,
 					fillOpacity: 0.75,
 					readings: [],
-					zIndex: 6
+					zIndex: 6,
+					summary: 'avg',
+					summary_type: 'column'
 				},
 				'precip_acc': {
 					description: 'Accumulated Precipitation',
@@ -743,7 +777,9 @@ var dir = 'weather',
 					lineWidth: 2,
 					fillOpacity: 0.75,
 					readings: [],
-					zIndex: 6
+					zIndex: 6,
+					summary: 'acc',
+					summary_type: 'column' 
 				},
 				'door_open': {
 					description: 'Door Status',
@@ -762,7 +798,9 @@ var dir = 'weather',
 					lineWidth: 2,
 					fillOpacity: 0.75,
 					readings: [],
-					zIndex: 6
+					zIndex: 6,
+					summary: 'avg',
+					summary_type: 'column'
 				},
 				'sw_status': {
 					description: 'Switch Status',
@@ -781,7 +819,9 @@ var dir = 'weather',
 					lineWidth: 2,
 					fillOpacity: 0.75,
 					readings: [],
-					zIndex: 6
+					zIndex: 6,
+					summary: 'avg',
+					summary_type: 'column'
 				},
 				'sw_power': {
 					description: 'Switch Power',
@@ -799,7 +839,9 @@ var dir = 'weather',
 					},
 					lineWidth: 2,
 					readings: [],
-					zIndex: 6
+					zIndex: 6,
+					summary: 'avg',
+					summary_type: 'column'
 				}
 			};
 
