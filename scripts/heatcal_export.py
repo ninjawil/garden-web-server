@@ -32,7 +32,7 @@ def main():
    
     script_name = os.path.basename(sys.argv[0])
     folder_loc  = os.path.dirname(os.path.realpath(sys.argv[0]))
-    folder_loc  = folder_loc.replace('garden-web-server/scripts', 'weather')
+    folder_loc  = folder_loc.replace('garden-web-server/scripts', '')
 
 
     #---------------------------------------------------------------------------
@@ -66,12 +66,10 @@ def main():
 
         for year_ref in years:
 
-            xml_file = 'wd_all_{d}.xml'.format(d= year_ref)
+            xml_file = '{folder}/data/wd_all_{d}.xml'.format(folder= folder_loc, d= year_ref)
 
             logger.info('Getting data from {f}'.format(f= xml_file)) 
-            tree = ET.parse('{folder}/data/{xml_file}'.format(
-                                                        folder= folder_loc,
-                                                        xml_file= xml_file))
+            tree = ET.parse('{f}'.format(f= xml_file))
             root = tree.getroot()
 
             if not xml_data:
@@ -82,9 +80,10 @@ def main():
 
             data = root[1]
 
-            # append year's data to file
+            # append year's data to file if the year matches
             for row in root[1].findall('row'):
-                xml_root[1].append(row)
+                if datetime.datetime.fromtimestamp(int(row[0].text)).strftime('%Y') == year_ref:
+                    xml_root[1].append(row)
 
 
         #-------------------------------------------------------------------

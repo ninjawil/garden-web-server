@@ -201,6 +201,142 @@ function displayHeatMap(sensor_id) {
 //-------------------------------------------------------------------------------
 function drawHeatMap(sensor_name, value_array) {
 	
+	
+	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	// Prepare data
+	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	var daily_array = [];
+		year_array = {},
+		current_month = 0,
+		d = '',
+		days = 0;
+		month = '',
+		year = '',
+		total = 0;
+
+	for(var i=0, len=value_array[sensor_name].length; i<len; i++){
+		days++;
+
+		daily_array.push(value_array[sensor_name][i][1]);
+
+		d = new Date(value_array[sensor_name][i][0])
+		month = d.getMonth();
+		year = d.getFullYear();
+
+		if( !(year in year_array)){
+			year_array[year] = {};
+			year_array[year]['acc'] = new Array(12).fill(0);
+			year_array[year]['avg'] = new Array(12).fill(0);
+			year_array[year]['maxmin'] = new Array(12).fill([0,0]);
+		}
+
+		year_array[year]['acc'][month] += value_array[sensor_name][i][1];
+
+		if(value_array[sensor_name][i][1] > year_array[year]['maxmin'][month][1]) {
+			year_array[year]['maxmin'][month][1] = value_array[sensor_name][i][1];
+		}
+
+		if(value_array[sensor_name][i][1] < year_array[year]['maxmin'][month][0]) {
+			year_array[year]['maxmin'][month][0] = value_array[sensor_name][i][1];
+		}
+
+	}
+
+	var days;
+
+	for (var year in year_array) {
+		if (year_array.hasOwnProperty(year)) {
+			for(var month=0, len=12; month<len; month++){
+				days = new Date(year, month, 0).getDate()
+				year_array[year]['avg'][month] = year_array[year]['acc'][month] / days;
+			}
+		}
+	}
+
+	console.log(year_array);
+	
+	var min_of_array = Math.min.apply(Math, daily_array);
+	var max_of_array = Math.max.apply(Math, daily_array);
+	var legend_range = [0,0,0,0];
+	
+	// legend_range[3] = average(daily_array) + standardDeviation(daily_array);
+	legend_range[3] = 0.75*max_of_array;
+	legend_range[2] = min_of_array + 0.75*(legend_range[3] - min_of_array);
+	legend_range[1] = min_of_array + 0.50*(legend_range[3] - min_of_array);
+	legend_range[0] = min_of_array + 0.25*(legend_range[3] - min_of_array);
+
+	
+	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	// Draw monthly barcharts
+	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+	highchartOptions = {
+        // chart: {
+        //     type:	'column'
+        // },
+        title: {
+            text: ''
+        },
+		xAxis: {
+			categories: [
+				'Jan',
+				'Feb',
+				'Mar',
+				'Apr',
+				'May',
+				'Jun',
+				'Jul',
+				'Aug',
+				'Sep',
+				'Oct',
+				'Nov',
+				'Dec'
+			],
+			crosshair: true
+		},
+		yAxis: {
+			title: sensor_setup[sensor_name].unit
+		},
+		tooltip: {
+			headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+			pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+				'<td style="padding:0"><b>{point.y:.2f} '+ sensor_setup[sensor_name].unit +'</b></td></tr>',
+			footerFormat: '</table>',
+			shared: true,
+			useHTML: true
+		},
+		plotOptions: {
+			column: {
+				pointPadding: 0.2,
+				borderWidth: 0
+			}
+		},
+    }
+
+	valueSeries = [];
+
+	for (var year in year_array) {
+		if (year_array.hasOwnProperty(year)) {
+			valueSeries.push({
+				data: year_array[year][sensor_setup[sensor_name].summary],
+				type: sensor_setup[sensor_name].summary_type,
+				name: year,
+				fillOpacity: 0.3,
+			});
+		}
+	}
+
+	// Add data values
+	highchartOptions.series = valueSeries;	
+	
+	// Create chart
+	$('<div class="chart" style="height:180px; width: 79vw;">').appendTo('#graph-container').highcharts(highchartOptions);
+	$('#graph-container').css('overflowY', 'auto');
+
+	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	// Draw heat maps
+	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	
     var parser = function(data) {
 		var stats = {};
 		for (var d in data) {
@@ -209,20 +345,6 @@ function drawHeatMap(sensor_name, value_array) {
 		return stats;
 	};
 
-	var data_array = [];
-	for(var i=0, len=value_array[sensor_name].length; i<len; i++){
-		data_array.push(value_array[sensor_name][i][1]);
-	}
-	
-	var min_of_array = Math.min.apply(Math, data_array);
-	var max_of_array = Math.max.apply(Math, data_array);
-	var legend_range = [0,0,0,0];
-	
-	// legend_range[3] = average(data_array) + standardDeviation(data_array);
-	legend_range[3] = 0.75*max_of_array;
-	legend_range[2] = min_of_array + 0.75*(legend_range[3] - min_of_array);
-	legend_range[1] = min_of_array + 0.50*(legend_range[3] - min_of_array);
-	legend_range[0] = min_of_array + 0.25*(legend_range[3] - min_of_array);
 	
 	var draw_row = '<div class="row"><div class="col-md-1"><div class="vertical-text"><h4>%year%</h4></div></div><div id="charts-col2-%year%" class="col-md-11"></div></div>'	
 
@@ -571,7 +693,9 @@ var dir = 'weather',
 					lineWidth: 2,
 					fillOpacity: 0.75,
 					readings: [],
-					zIndex: 6
+					zIndex: 6,
+					summary: 'avg',
+					summary_type: 'column'
 				},
 				'inside_temp': {
 					description: 'Inside Temperature',
@@ -590,7 +714,9 @@ var dir = 'weather',
 					lineWidth: 2,
 					fillOpacity: 0.75,
 					readings: [],
-					zIndex: 6
+					zIndex: 6,
+					summary: 'avg',
+					summary_type: 'column'
 				},
 				'inside_hum': {
 					description: 'Inside Humidity',
@@ -609,7 +735,9 @@ var dir = 'weather',
 					lineWidth: 2,
 					fillOpacity: 0.75,
 					readings: [],
-					zIndex: 6
+					zIndex: 6,
+					summary: 'avg',
+					summary_type: 'column'
 				},
 				'precip_rate': {
 					description: 'Precipitation Rate',
@@ -628,7 +756,9 @@ var dir = 'weather',
 					lineWidth: 2,
 					fillOpacity: 0.75,
 					readings: [],
-					zIndex: 6
+					zIndex: 6,
+					summary: 'avg',
+					summary_type: 'column'
 				},
 				'precip_acc': {
 					description: 'Accumulated Precipitation',
@@ -647,7 +777,9 @@ var dir = 'weather',
 					lineWidth: 2,
 					fillOpacity: 0.75,
 					readings: [],
-					zIndex: 6
+					zIndex: 6,
+					summary: 'acc',
+					summary_type: 'column' 
 				},
 				'door_open': {
 					description: 'Door Status',
@@ -666,7 +798,9 @@ var dir = 'weather',
 					lineWidth: 2,
 					fillOpacity: 0.75,
 					readings: [],
-					zIndex: 6
+					zIndex: 6,
+					summary: 'avg',
+					summary_type: 'column'
 				},
 				'sw_status': {
 					description: 'Switch Status',
@@ -685,7 +819,9 @@ var dir = 'weather',
 					lineWidth: 2,
 					fillOpacity: 0.75,
 					readings: [],
-					zIndex: 6
+					zIndex: 6,
+					summary: 'avg',
+					summary_type: 'column'
 				},
 				'sw_power': {
 					description: 'Switch Power',
@@ -703,7 +839,9 @@ var dir = 'weather',
 					},
 					lineWidth: 2,
 					readings: [],
-					zIndex: 6
+					zIndex: 6,
+					summary: 'avg',
+					summary_type: 'column'
 				}
 			};
 

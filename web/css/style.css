@@ -62,6 +62,8 @@ html {
 		font-family: Verdana, Geneva, sans-serif;
 		color: #616161;
 		height: 85vh;
+		padding-right: 5px;
+		padding-left: 5px;
 	}
 }
 
