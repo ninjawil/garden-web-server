@@ -215,7 +215,6 @@ function drawHeatMap(sensor_name, value_array) {
 		total = 0;
 
 	for(var i=0, len=value_array[sensor_name].length; i<len; i++){
-		days++;
 
 		daily_array.push(value_array[sensor_name][i][1]);
 
@@ -223,27 +222,42 @@ function drawHeatMap(sensor_name, value_array) {
 		month = d.getMonth();
 		year = d.getFullYear();
 
+		// Populate new arrays for the new year
 		if( !(year in year_array)){
 			year_array[year] = {};
 			year_array[year]['acc'] = new Array(12).fill(0);
 			year_array[year]['avg'] = new Array(12).fill(0);
-			year_array[year]['maxmin'] = new Array(12).fill([0,0]);
+			year_array[year]['maxmin'] = new Array(12);
+			for (var h = 0; h < 12; h++) {
+				year_array[year]['maxmin'][h] = [null, null];
+			}
 		}
 
+		// Accumulate value
 		year_array[year]['acc'][month] += value_array[sensor_name][i][1];
 
-		if(value_array[sensor_name][i][1] > year_array[year]['maxmin'][month][1]) {
+		// Find maximum value
+		if(year_array[year]['maxmin'][month][1] == null){
 			year_array[year]['maxmin'][month][1] = value_array[sensor_name][i][1];
+		} else {
+			if(value_array[sensor_name][i][1] > year_array[year]['maxmin'][month][1]) {
+				year_array[year]['maxmin'][month][1] = value_array[sensor_name][i][1];
+			}
 		}
 
-		if(value_array[sensor_name][i][1] < year_array[year]['maxmin'][month][0]) {
+		// Find minimum value
+		if(year_array[year]['maxmin'][month][0] == null){
 			year_array[year]['maxmin'][month][0] = value_array[sensor_name][i][1];
+		} else {
+			if(value_array[sensor_name][i][1] < year_array[year]['maxmin'][month][0]) {
+				year_array[year]['maxmin'][month][0] = value_array[sensor_name][i][1];
+			}
 		}
 
 	}
 
+	// Calculate average monthly value
 	var days;
-
 	for (var year in year_array) {
 		if (year_array.hasOwnProperty(year)) {
 			for(var month=0, len=12; month<len; month++){
@@ -295,13 +309,13 @@ function drawHeatMap(sensor_name, value_array) {
 			crosshair: true
 		},
 		yAxis: {
-			title: sensor_setup[sensor_name].unit
+			title: sensor_setup[sensor_name].unit,
+			softMin: 0.00,
+			tickInterval: sensor_setup[sensor_name].tick_interval
 		},
 		tooltip: {
-			headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
-			pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
-				'<td style="padding:0"><b>{point.y:.2f} '+ sensor_setup[sensor_name].unit +'</b></td></tr>',
-			footerFormat: '</table>',
+			valueSuffix: sensor_setup[sensor_name].unit,
+			valueDecimals: 2,
 			shared: true,
 			useHTML: true
 		},
@@ -694,8 +708,9 @@ var dir = 'weather',
 					fillOpacity: 0.75,
 					readings: [],
 					zIndex: 6,
-					summary: 'avg',
-					summary_type: 'column'
+					summary: 'maxmin',
+					tick_interval: 5,
+					summary_type: 'columnrange'
 				},
 				'inside_temp': {
 					description: 'Inside Temperature',
@@ -715,8 +730,9 @@ var dir = 'weather',
 					fillOpacity: 0.75,
 					readings: [],
 					zIndex: 6,
-					summary: 'avg',
-					summary_type: 'column'
+					summary: 'maxmin',
+					tick_interval: 5,
+					summary_type: 'columnrange'
 				},
 				'inside_hum': {
 					description: 'Inside Humidity',
@@ -736,8 +752,9 @@ var dir = 'weather',
 					fillOpacity: 0.75,
 					readings: [],
 					zIndex: 6,
-					summary: 'avg',
-					summary_type: 'column'
+					summary: 'maxmin',
+					tick_interval: 5,
+					summary_type: 'columnrange'
 				},
 				'precip_rate': {
 					description: 'Precipitation Rate',
@@ -757,8 +774,9 @@ var dir = 'weather',
 					fillOpacity: 0.75,
 					readings: [],
 					zIndex: 6,
-					summary: 'avg',
-					summary_type: 'column'
+					summary: 'maxmin',
+					tick_interval: 0.05,
+					summary_type: 'columnrange'
 				},
 				'precip_acc': {
 					description: 'Accumulated Precipitation',
@@ -779,6 +797,7 @@ var dir = 'weather',
 					readings: [],
 					zIndex: 6,
 					summary: 'acc',
+					tick_interval: 5,
 					summary_type: 'column' 
 				},
 				'door_open': {
@@ -800,6 +819,7 @@ var dir = 'weather',
 					readings: [],
 					zIndex: 6,
 					summary: 'avg',
+					tick_interval: 5,
 					summary_type: 'column'
 				},
 				'sw_status': {
@@ -821,6 +841,7 @@ var dir = 'weather',
 					readings: [],
 					zIndex: 6,
 					summary: 'avg',
+					tick_interval: 5,
 					summary_type: 'column'
 				},
 				'sw_power': {
@@ -841,6 +862,7 @@ var dir = 'weather',
 					readings: [],
 					zIndex: 6,
 					summary: 'avg',
+					tick_interval: 5,
 					summary_type: 'column'
 				}
 			};
